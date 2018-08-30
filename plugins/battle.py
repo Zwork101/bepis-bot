@@ -36,6 +36,9 @@ class BattlePlug(Plugin):
     @ensure_index
     @ensure_other
     def start_battle(self, event, user, shibe, other_user, shibe_index: int):
+        if user.user_id == other_user.user.id:
+            return event.msg.reply("You can't battle yourself. That defeats the purpose.")
+
         event.msg.reply("Hey {0}! <@{1}> has challenged you to a duel! Type !accept if you accept,"
                         " or !decline if you decline.".format(other_user.user.mention, user.user_id))
         other_status = None
@@ -145,3 +148,10 @@ class BattlePlug(Plugin):
         else:
             other_user_db.remove_shibe(number - 1)
             user.add_shibe(other_shibe[0])
+
+    @Plugin.command("bestfren")
+    def best_friend(self, event):
+        person = random.choice([self.shibes["Jack Shibe"], self.shibes["Para Shibe"]])
+        resp = requests.get(person)
+        file = BytesIO(resp.content)
+        event.msg.reply(attachments=[("bestfriend.png", file)])

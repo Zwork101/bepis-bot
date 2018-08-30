@@ -46,6 +46,7 @@ approved, extreme, no, blank, shibe.**
 **help** | You're looking at it.
 **role** <ABC> | Add a sweet role to your account, so people know they're not alone.
 **unrole** <ABC> | Remove a previously added role from your account, yw.
+**source** | I had to prove the battle cmd wasn't rigged some how.
 """
         embed.set_footer(text="<>: required, []: optional, @: mention, "
                               "#: number, ID: shop ID / inventory ID, ABC: text")

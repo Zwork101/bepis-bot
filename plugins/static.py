@@ -97,3 +97,7 @@ class StaticDataPlug(Plugin):
             file = BytesIO(resp.content)
             file.seek(0)
             event.msg.reply(attachments=[(shibe[2], file)])
+
+    @Plugin.command("source")
+    def show_github(self, event):
+        event.msg.reply("Read it like the bible: https://github.com/Zwork101/bepis-bot")
