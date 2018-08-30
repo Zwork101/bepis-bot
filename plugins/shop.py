@@ -67,7 +67,7 @@ class ShopPlug(Plugin):
 
     @Plugin.command("shop", "[page:int]")
     def show_shop(self, event, page: int=1):
-        if page not in range(1, (len(self.shibes) // 20) + 1):
+        if page not in range(1, (len(self.shibes) // 20) + 2):
             return event.msg.reply("Invalid page number, choose a page from 1 to {0}"
                                    .format((len(self.shibes) // 20) + 1))
 
@@ -113,6 +113,8 @@ class ShopPlug(Plugin):
     def flip_bepis(self, event, user, amount: int):
         if user.bepis < amount:
             return event.msg.reply("You don't have enough bepis to bet that amount")
+        elif amount < 1:
+            return event.msg.reply("What? You can't bet nothing!")
 
         if randint(0, 1):
             user.bepis += amount

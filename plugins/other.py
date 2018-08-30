@@ -45,7 +45,7 @@ approved, extreme, no, blank, shibe.**
 **ping** | Pong.
 **help** | You're looking at it.
 **role** <ABC> | Add a sweet role to your account, so people know they're not alone.
-**unrole
+**unrole** <ABC> | Remove a previously added role from your account, yw.
 """
         embed.set_footer(text="<>: required, []: optional, @: mention, "
                               "#: number, ID: shop ID / inventory ID, ABC: text")

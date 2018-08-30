@@ -44,7 +44,6 @@ def ensure_index(func):
 def ensure_other(func):
     @wraps(func)
     def wrapper(self, event, user, *args, other_user: str=None, **kwargs):
-        print(other_user)
         if other_user is not None:
             try:
                 if "!" in other_user:
@@ -54,7 +53,6 @@ def ensure_other(func):
                 if actual is None:
                     raise ValueError("Invalid user")
             except ValueError:
-                print(other_user[2:-1], actual)
                 return event.msg.reply("Invalid mention, who even is that?")
             else:
                 other_user = self.db.find_user(actual.user.id)

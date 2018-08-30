@@ -8,7 +8,7 @@ from utils.deco import ensure_profile, ensure_other, ensure_index
 
 from disco.bot import Plugin
 from PIL import Image, ImageDraw, ImageColor
-from gevent import sleep
+from gevent import sleep, timeout
 import requests
 
 
@@ -54,7 +54,7 @@ class BattlePlug(Plugin):
                                      channel__id=event.msg.channel.id, author__id=other_user.user.id)
         try:
             result.get(timeout=30.0)
-        except TimeoutError:
+        except timeout.Timeout:
             return event.msg.reply("Sorry, but your opponent didn't reply in time. Try someone else!")
         if not other_status:
             return event.msg.reply("Well, that's too bad. I bet you're just scared.")
@@ -70,7 +70,7 @@ class BattlePlug(Plugin):
                                      channel__id=event.msg.channel.id,  author__id=other_user.user.id)
         try:
             number = int(result.get(timeout=30.0).content)
-        except TimeoutError:
+        except timeout.Timeout:
             return event.msg.reply("Sorry, but your opponent didn't reply in time. Try someone else!")
 
         other_user_db = self.db.find_user(other_user.user.id)

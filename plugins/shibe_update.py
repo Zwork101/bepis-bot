@@ -30,7 +30,6 @@ class ShibeUpdatePlug(Plugin):
             url, name = split_msg[0], ' '.join(split_msg[1:])
             self.shibes[name] = url
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes.keys())))
-        print(self.shibes)
 
     @Plugin.command("catch")
     @ensure_profile
