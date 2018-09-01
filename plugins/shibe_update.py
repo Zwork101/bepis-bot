@@ -59,6 +59,7 @@ class ShibeUpdatePlug(Plugin):
                 break
         else:
             hours, remainder = divmod(diff.seconds, 3600)
+            hours = hours - 21
             minutes, seconds = divmod(remainder, 60)  # Thanks stackoverflow
             return event.msg.reply(
                 "Sorry, you still have to wait {0} hours, {1} minutes, and {0} seconds"
@@ -122,10 +123,6 @@ class ShibeUpdatePlug(Plugin):
     @Plugin.command("set", "<other_user:str> <amount:int> <shibe_name:str...>")
     @ensure_other
     def add_shibe(self, event, other_user, shibe_name, amount):
-        shibe_name = shibe_name.replace(":star:", "⭐")
-        shibe_name = shibe_name.replace(":star2:", "🌟")
-        shibe_name = shibe_name.replace(":dizzy:", "💫")
-
         guild_member = event.msg.channel.guild.get_member(event.msg.author)
         if ADD_SHIBE_ROLE not in guild_member.roles:
             return event.msg.reply("Sorry, but you can't do that.")
