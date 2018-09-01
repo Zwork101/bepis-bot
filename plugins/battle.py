@@ -2,9 +2,9 @@ from logging import getLogger
 from io import BytesIO
 import random
 
-from utils.common import SHIBE_CHANNEL, BATTLE_MSGS
+from utils.common import SHIBE_CHANNEL, BATTLE_MSGS, COMMAND_OUTLAWS, REDIRECT_CHANNEL
 from utils.db import Database
-from utils.deco import ensure_profile, ensure_other, ensure_index
+from utils.deco import ensure_profile, ensure_other, ensure_index, limit_channel
 
 from disco.bot import Plugin
 from PIL import Image, ImageDraw, ImageColor
@@ -35,6 +35,7 @@ class BattlePlug(Plugin):
     @ensure_profile
     @ensure_index
     @ensure_other
+    @limit_channel(*COMMAND_OUTLAWS, alternative_channel_id=REDIRECT_CHANNEL)
     def start_battle(self, event, user, shibe, other_user, shibe_index: int):
         if user.user_id == other_user.user.id:
             return event.msg.reply("You can't battle yourself. That defeats the purpose.")

@@ -43,7 +43,7 @@ def ensure_index(func):
 
 def ensure_other(func):
     @wraps(func)
-    def wrapper(self, event, user, *args, other_user: str=None, **kwargs):
+    def wrapper(self, event, *args, other_user: str=None, **kwargs):
         if other_user is not None:
             try:
                 if "!" in other_user:
@@ -58,6 +58,22 @@ def ensure_other(func):
                 other_user = self.db.find_user(actual.user.id)
                 if not other_user:
                     self.db.create_user(actual.user)
-        return func(self, event, user=user, *args,
+        return func(self, event, *args,
                     other_user=actual if other_user is not None else other_user, **kwargs)
     return wrapper
+
+
+def limit_channel(*channel_ids, alternative_channel_id: int=None):
+    def wrap_func(func):
+        @wraps(func)
+        def wrapper(self, event, *args, **kwargs):
+            if event.msg.channel.id in channel_ids:
+                if alternative_channel_id:
+                    event.msg.reply("Sorry, but you can't use that command here. Use <#{0}>"
+                                    .format(alternative_channel_id))
+                else:
+                    event.msg.reply("Sorry, but you can't use that command here.")
+            else:
+                return func(self, event, *args, **kwargs)
+        return wrapper
+    return wrap_func

@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 from io import BytesIO
 from logging import getLogger
-from random import choice
+from random import choice, randint
 
-from utils.common import SHIBE_CHANNEL
+from utils.common import SHIBE_CHANNEL, ADD_SHIBE_ROLE, REDIRECT_CHANNEL, COMMAND_OUTLAWS
 from utils.db import Database
-from utils.deco import ensure_profile, ensure_index, ensure_other
+from utils.deco import ensure_profile, ensure_index, ensure_other, limit_channel
 
 import requests
 from disco.bot import Plugin
@@ -33,27 +33,40 @@ class ShibeUpdatePlug(Plugin):
 
     @Plugin.command("catch")
     @ensure_profile
+    @limit_channel(*COMMAND_OUTLAWS, alternative_channel_id=REDIRECT_CHANNEL)
     def catch_chibe(self, event, user):
         diff = datetime.now() - user.last_daily
         if diff > timedelta(hours=3):
-            name, url = choice(tuple(self.shibes.items()))
-            resp = requests.get(url)
-            file = BytesIO(resp.content)
-            file.seek(0)
-            event.msg.reply("You found a **{0}**".format(name), attachments=[(name + ".png", file)])
-            user.add_shibe(name)
-            user.last_daily = datetime.now()
-            self.logger.info("User {0} caught a {1}".format(user.user_id, name))
+            while True:
+                name, url = choice(tuple(self.shibes.items()))
+                if "⭐" in name:
+                    if randint(1, 100) != 1:
+                        continue
+                elif "🌟" in name:
+                    if randint(1, 500) != 1:
+                        continue
+                elif "💫" in name:
+                    if randint(1, 1000) != 1:
+                        continue
+
+                resp = requests.get(url)
+                file = BytesIO(resp.content)
+                file.seek(0)
+                event.msg.reply("You found a **{0}**".format(name), attachments=[(name + ".png", file)])
+                user.add_shibe(name)
+                user.last_daily = datetime.now()
+                self.logger.info("User {0} caught a {1}".format(user.user_id, name))
+                break
         else:
-            hours = 3 - (diff.seconds // 3600)
-            minutes = 60 - ((diff.seconds - (3 - hours) * 3600) // 60)
-            seconds = 60 - ((diff.seconds - (3 - hours) * 3600) - (60 - minutes) * 60)
+            hours, remainder = divmod(diff.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)  # Thanks stackoverflow
             return event.msg.reply(
                 "Sorry, you still have to wait {0} hours, {1} minutes, and {0} seconds"
                 .format(hours - 1, minutes, seconds))
 
     @Plugin.command("inv", "[page:int]")
     @ensure_profile
+    @limit_channel(*COMMAND_OUTLAWS, alternative_channel_id=REDIRECT_CHANNEL)
     def list_shibes(self, event, user, page: int=1):
         if not user.shibes:
             event.msg.reply("You don't have any shibes. Type !catch to find one.")
@@ -105,3 +118,20 @@ class ShibeUpdatePlug(Plugin):
         user.remove_shibe(shibe_index - 1)
         event.msg.reply("Now there's one more {0} in the wild".format(shibe[0]))
         self.logger.info("User {0} released their {1}".format(user.user_id, shibe[0]))
+
+    @Plugin.command("set", "<other_user:str> <amount:int> <shibe_name:str...>")
+    @ensure_other
+    def add_shibe(self, event, other_user, shibe_name, amount):
+        shibe_name = shibe_name.replace(":star:", "⭐")
+        shibe_name = shibe_name.replace(":star2:", "🌟")
+        shibe_name = shibe_name.replace(":dizzy:", "💫")
+
+        guild_member = event.msg.channel.guild.get_member(event.msg.author)
+        if ADD_SHIBE_ROLE not in guild_member.roles:
+            return event.msg.reply("Sorry, but you can't do that.")
+        elif shibe_name not in self.shibes:
+            return event.msg.reply("Sorry, but that shibe doesn't exist (caps sensitive)")
+        other_user_db = self.db.find_user(other_user.user.id)
+        other_user_db.add_shibe(shibe_name, amount)
+        event.msg.reply("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))
+        self.logger.info("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))

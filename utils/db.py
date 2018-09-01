@@ -35,14 +35,14 @@ class BepisUser:
         self._last_daily = value
         self.logger.debug("Updated last_daily to now")
 
-    def add_shibe(self, shibe_name: int):
+    def add_shibe(self, shibe_name: str, amount: int=None):
         for i, shibe in enumerate(self.shibes):
             if shibe[0] == shibe_name:
-                shibe_amount = shibe[1] + 1
+                shibe_amount = (shibe[1] + 1) if amount is None else amount
                 self.shibes[i] = shibe_name, shibe_amount
                 break
         else:
-            self.shibes.append((shibe_name, 1))
+            self.shibes.append((shibe_name, (1 if amount is None else amount)))
         self.master.update_one({"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
         self.logger.debug("Added shibe: " + shibe_name)
 
