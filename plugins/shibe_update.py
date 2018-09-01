@@ -36,7 +36,7 @@ class ShibeUpdatePlug(Plugin):
     @limit_channel(*COMMAND_OUTLAWS, alternative_channel_id=REDIRECT_CHANNEL)
     def catch_chibe(self, event, user):
         diff = datetime.now() - user.last_daily
-        if diff > timedelta(hours=3):
+        if diff >= timedelta(hours=3):
             while True:
                 name, url = choice(tuple(self.shibes.items()))
                 if "⭐" in name:
@@ -58,12 +58,13 @@ class ShibeUpdatePlug(Plugin):
                 self.logger.info("User {0} caught a {1}".format(user.user_id, name))
                 break
         else:
-            hours, remainder = divmod(diff.seconds, 3600)
-            hours = hours - 21
-            minutes, seconds = divmod(remainder, 60)  # Thanks stackoverflow
+            totsec = abs(diff.total_seconds())
+            hours = totsec // 3600
+            minutes = (totsec % 3600) // 60
+            seconds = (totsec % 3600) % 60
             return event.msg.reply(
                 "Sorry, you still have to wait {0} hours, {1} minutes, and {0} seconds"
-                .format(hours - 1, minutes, seconds))
+                .format(int(hours), int(minutes), int(seconds)))
 
     @Plugin.command("inv", "[page:int]")
     @ensure_profile
