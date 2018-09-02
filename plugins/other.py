@@ -50,7 +50,8 @@ approved, extreme, no, blank, shibe.**
 
 ***Shibe Manager***
 *The following commands require the Shibe Manager role*
-**set <@> <#> <ABC> | Set a certain amount of a shibe to someone
+**set** <@> <#> <ABC> | Set a certain amount of a shibe to someone
+**reload** <catch/shrine> | When a new image is added, reload the bot's img cache.
 """
         embed.set_footer(text="<>: required, []: optional, @: mention, "
                               "#: number, ID: shop ID / inventory ID, ABC: text")

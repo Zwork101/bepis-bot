@@ -2,7 +2,7 @@ from io import BytesIO
 from logging import getLogger
 from random import choice
 
-from utils.common import SHRINE_CHANNEL
+from utils.common import SHRINE_CHANNEL, ADD_SHIBE_ROLE
 
 from disco.bot import Plugin
 import requests
@@ -101,3 +101,19 @@ class StaticDataPlug(Plugin):
     @Plugin.command("source")
     def show_github(self, event):
         event.msg.reply("Read it like the bible: https://github.com/Zwork101/bepis-bot")
+
+    @Plugin.command("reload shrine")
+    def reload_shrine(self, event):
+        guild_member = event.msg.channel.guild.get_member(event.msg.author)
+        if ADD_SHIBE_ROLE not in guild_member.roles:
+            return event.msg.reply("Sorry, but you can't do that.")
+        self.shibes = []
+        channel = event.msg.client.api.channels_get(SHRINE_CHANNEL)
+        for msg in channel.messages:
+            if msg.content:
+                self.shibes.append(("LINK", msg.content))
+            elif msg.attachments:
+                for attach in msg.attachments.values():
+                    self.shibes.append(("ATTACH", attach.url, attach.filename))
+        self.logger.info("Loaded images from the shrine, {0}".format(len(self.shibes)))
+        event.msg.reply("Loaded images from the shrine, {0}".format(len(self.shibes)))

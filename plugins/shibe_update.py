@@ -62,9 +62,10 @@ class ShibeUpdatePlug(Plugin):
             hours = totsec // 3600
             minutes = (totsec % 3600) // 60
             seconds = (totsec % 3600) % 60
+            print(hours, minutes, seconds)
             return event.msg.reply(
-                "Sorry, you still have to wait {0} hours, {1} minutes, and {0} seconds"
-                .format(int(hours), int(minutes), int(seconds)))
+                "Sorry, you still have to wait {0} hours, {1} minutes, and {2} seconds."
+                .format(int(hours) -1, int(minutes), int(seconds)))
 
     @Plugin.command("inv", "[page:int]")
     @ensure_profile
@@ -133,3 +134,18 @@ class ShibeUpdatePlug(Plugin):
         other_user_db.add_shibe(shibe_name, amount)
         event.msg.reply("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))
         self.logger.info("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))
+
+    @Plugin.command("reload catch")
+    def reload_shibes(self, event):
+        guild_member = event.msg.channel.guild.get_member(event.msg.author)
+        if ADD_SHIBE_ROLE not in guild_member.roles:
+            return event.msg.reply("Sorry, but you can't do that.")
+        client = event.msg.client
+        shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
+        self.shibes = {}
+        for msg in shibe_channel.messages:
+            split_msg = msg.content.split(' ')
+            url, name = split_msg[0], ' '.join(split_msg[1:])
+            self.shibes[name] = url
+        self.logger.info("Finished reloading {0} shibes".format(len(self.shibes.keys())))
+        event.msg.reply("Finished reloading shibes. {0} catchable shibes.".format(len(self.shibes.keys())))
