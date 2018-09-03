@@ -5,7 +5,7 @@ from random import choice, randint
 
 from utils.common import SHIBE_CHANNEL, ADD_SHIBE_ROLE, REDIRECT_CHANNEL, COMMAND_OUTLAWS
 from utils.db import Database
-from utils.deco import ensure_profile, ensure_index, ensure_other, limit_channel
+from utils.deco import ensure_profile, ensure_index, ensure_other, limit_channel, admin_only
 
 import requests
 from disco.bot import Plugin
@@ -58,14 +58,11 @@ class ShibeUpdatePlug(Plugin):
                 self.logger.info("User {0} caught a {1}".format(user.user_id, name))
                 break
         else:
-            totsec = abs(diff.total_seconds())
-            hours = totsec // 3600
-            minutes = (totsec % 3600) // 60
-            seconds = (totsec % 3600) % 60
+            hours, minutes, seconds = map(lambda x: int(float(x)), str(diff).split(':'))
             print(hours, minutes, seconds)
             return event.msg.reply(
                 "Sorry, you still have to wait {0} hours, {1} minutes, and {2} seconds."
-                .format(int(hours) -1, int(minutes), int(seconds)))
+                .format(2 - hours, 59 - minutes, 59 - seconds))
 
     @Plugin.command("inv", "[page:int]")
     @ensure_profile
@@ -122,24 +119,9 @@ class ShibeUpdatePlug(Plugin):
         event.msg.reply("Now there's one more {0} in the wild".format(shibe[0]))
         self.logger.info("User {0} released their {1}".format(user.user_id, shibe[0]))
 
-    @Plugin.command("set", "<other_user:str> <amount:int> <shibe_name:str...>")
-    @ensure_other
-    def add_shibe(self, event, other_user, shibe_name, amount):
-        guild_member = event.msg.channel.guild.get_member(event.msg.author)
-        if ADD_SHIBE_ROLE not in guild_member.roles:
-            return event.msg.reply("Sorry, but you can't do that.")
-        elif shibe_name not in self.shibes:
-            return event.msg.reply("Sorry, but that shibe doesn't exist (caps sensitive)")
-        other_user_db = self.db.find_user(other_user.user.id)
-        other_user_db.add_shibe(shibe_name, amount)
-        event.msg.reply("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))
-        self.logger.info("Set {0}'s {1} count to {2}".format(other_user.user.mention, shibe_name, amount))
-
     @Plugin.command("reload catch")
+    @admin_only
     def reload_shibes(self, event):
-        guild_member = event.msg.channel.guild.get_member(event.msg.author)
-        if ADD_SHIBE_ROLE not in guild_member.roles:
-            return event.msg.reply("Sorry, but you can't do that.")
         client = event.msg.client
         shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
         self.shibes = {}

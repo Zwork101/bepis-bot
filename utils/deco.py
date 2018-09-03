@@ -1,5 +1,7 @@
 from functools import wraps
 
+from utils.common import ADD_SHIBE_ROLE
+
 
 def ensure_profile(func):
     @wraps(func)
@@ -77,3 +79,13 @@ def limit_channel(*channel_ids, alternative_channel_id: int=None):
                 return func(self, event, *args, **kwargs)
         return wrapper
     return wrap_func
+
+
+def admin_only(func):
+    @wraps(func)
+    def wrapper(self, event, *args, **kwargs):
+        guild_member = event.msg.channel.guild.get_member(event.msg.author)
+        if ADD_SHIBE_ROLE not in guild_member.roles:
+            return event.msg.reply("Sorry, but you can't do that.")
+        return func(self, event, *args, **kwargs)
+    return wrapper

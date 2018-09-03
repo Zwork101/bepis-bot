@@ -37,7 +37,7 @@ class ExtraPlug(Plugin):
 ***Fun Commands***
 *The following commands don't take any arguments, and show images / videos.*
 **disrespect, tarnation, anthem, drincc, pat, politics, soviet, stop,
-approved, extreme, no, blank, shibe.**
+approved, extreme, no, blank, shibe, gethapp.**
 
 ***Extra Commands***
 **invite** | Create an invite link, and share it with your friends to earn bepis.
@@ -50,7 +50,8 @@ approved, extreme, no, blank, shibe.**
 
 ***Shibe Manager***
 *The following commands require the Shibe Manager role*
-**set** <@> <#> <ABC> | Set a certain amount of a shibe to someone
+**set *shibe*** <@> <#> <ABC> | Set a certain amount of a shibe to someone.
+**set *bepis*** <@> <#> | Ste a certain amount of bepis to someone.
 **reload** <catch/shrine> | When a new image is added, reload the bot's img cache.
 """
         embed.set_footer(text="<>: required, []: optional, @: mention, "

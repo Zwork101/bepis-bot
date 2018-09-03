@@ -8,7 +8,8 @@
       "plugins.invites",
       "plugins.battle",
       "plugins.shop",
-      "plugins.other"
+      "plugins.other",
+      "plugins.admin"
     ]
   }
 }
