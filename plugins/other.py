@@ -25,12 +25,13 @@ class ExtraPlug(Plugin):
 **show** <ID> | Show off your shibes, how cute they are.
 **trade** <@> <ID> | Move your shibe into anther person's inventory.
 **release** <ID> | Send your shibe off, into the wild.
+**redeem** <ABC> | Redeem a code, and earn a shibe created from our great shibe admins.
 
 ***Shop Commands***
 **bepis** [@] | Admire your bepis, or make fun of someone else's.
 **sell** <ID> | Sell one of your shibes. Don't worry, they're in good hands.
 **shop** [#] | Look at our large inventory of shibes, you know you want too.
-**buy** <ID> | Buy a shibe from our shop. It's worth every bepis.
+**buy *shibe*** <ID> | Buy a shibe from our shop. It's worth every bepis.
 **donate** <@> <#> | Feeling charitable? Donate bepis to someone else.
 **flip** <#> | Flip a coin. You win, double your bet. Lose, lose your bet.
 
@@ -53,6 +54,7 @@ approved, extreme, no, blank, shibe, gethapp.**
 **set *shibe*** <@> <#> <ABC> | Set a certain amount of a shibe to someone.
 **set *bepis*** <@> <#> | Ste a certain amount of bepis to someone.
 **reload** <catch/shrine> | When a new image is added, reload the bot's img cache.
+**gencode** <ABC> | Create a code that can be redeemed, for whatever shibe is supplied.
 """
         embed.set_footer(text="<>: required, []: optional, @: mention, "
                               "#: number, ID: shop ID / inventory ID, ABC: text")

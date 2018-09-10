@@ -81,7 +81,7 @@ class ShopPlug(Plugin):
                          .format(page, (len(self.shibes) // 20) + 1))
         event.msg.reply(embed=embed)
 
-    @Plugin.command("buy", "<shop_index:int>")
+    @Plugin.command("buy shibe", "<shop_index:int>")
     @ensure_profile
     def buy_shop(self, event, user, shop_index: int):
         try:

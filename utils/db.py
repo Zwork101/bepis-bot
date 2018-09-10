@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from logging import getLogger
+from hashlib import md5
 from os import environ
+from uuid import uuid4
 
 from pymongo import mongo_client
 
@@ -14,6 +16,12 @@ class BepisUser:
         self.shibes = contents['shibes']
         self._bepis = contents['bepis']
         self._last_daily = contents['last_daily']
+
+        if "powerups" not in contents:
+            self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": []}})
+            self.powerups = []
+        else:
+            self.powerups = contents['powerups']
 
     @property
     def bepis(self):
@@ -55,6 +63,20 @@ class BepisUser:
             self.shibes[shibe_index] = (shibe[0], new_count)
         self.master.update_one({"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
         self.logger.debug("Removed shibe: " + shibe[0])
+
+    def add_powerup(self, *data):
+        powerups = self.powerups.copy()
+        powerups.append(data)
+        self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": powerups}})
+        self.logger.debug("Added powerup: " + powerups[0])
+
+    def remove_powerup(self, name: str):
+        for powerup in self.powerups:
+            if powerup[0] == name and powerup[1] is not None:
+                break
+        self.powerups.remove(powerup)
+        self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": powerup}})
+        self.logger.debug("Removed powerup: " + powerup[0])
 
 
 class Database:
@@ -117,3 +139,26 @@ class InviteDatabase:
     def remove_invite(self, invite_code: str):
         self.invites.delete_one({"invite_code": invite_code})
         self.logger.debug("Removed invite: {0}".format(invite_code))
+
+
+class CodeDatabase:
+
+    def __init__(self):
+        self.logger = getLogger("CodeDatabase")
+        self.client = mongo_client.MongoClient(environ["MONGO_URI"])
+        self.codes = self.client['bepis_bot']['codes']
+        self.codes.create_index("hash", unique=True)
+
+    def create_code(self, value: str):
+        code = str(uuid4()).upper()
+        hashed = md5(code.encode()).hexdigest()
+        self.codes.insert_one({"hash": hashed,
+                               "value": value})
+        return code
+
+    def activate_code(self, code: str):
+        hashed = md5(code.encode()).hexdigest()
+        result = self.codes.find_one({"hash": hashed})
+        if result:
+            self.codes.delete_one({"hash": hashed})
+            return result['value']

@@ -1,16 +1,19 @@
 from logging import getLogger
+from io import BytesIO
 
 from disco.bot import Plugin
+import requests
 
 from utils.common import SHIBE_CHANNEL
-from utils.db import Database
-from utils.deco import admin_only, ensure_other
+from utils.db import Database, CodeDatabase
+from utils.deco import admin_only, ensure_other, ensure_profile
 
 
 class AdminPlug(Plugin):
 
     def load(self, config):
         self.db = Database("AdminPlug")
+        self.code_db = CodeDatabase()
         self.logger = getLogger("AdminPlug")
         self.shibes = {}
         super().load(config)
@@ -45,3 +48,24 @@ class AdminPlug(Plugin):
         other_user_db.bepis = amount
         event.msg.reply("Set {0}'s bepis to {1}".format(other_user.user.mention, amount))
         self.logger.info("Set {0}'s bepis to {1}".format(other_user.user.id, amount))
+
+    @Plugin.command("gencode", "<shibe_name:str...>")
+    @admin_only
+    def create_code(self, event, shibe_name: str):
+        if shibe_name not in self.shibes:
+            return event.msg.reply("Cannot find shibe: " + shibe_name)
+        code = self.code_db.create_code(shibe_name)
+        event.msg.reply("Done! The code is " + code)
+
+    @Plugin.command("redeem", "<code:str>")
+    @ensure_profile
+    def redeem_code(self, event, user, code: str):
+        found = self.code_db.activate_code(code)
+        if found:
+            user.add_shibe(found)
+            resp = requests.get(self.shibes[found])
+            file = BytesIO(resp.content)
+            file.seek(0)
+            event.msg.reply("That code was worth a **{}**".format(found), attachments=[(found + ".png", file)])
+        else:
+            event.msg.reply("Sorry, but that code is invalid.")
