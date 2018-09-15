@@ -26,11 +26,11 @@ class ShopPlug(Plugin):
             split_msg = msg.content.split(' ')
             _, name = split_msg[0], ' '.join(split_msg[1:])
             if "⭐" in name:
-                value = 30
+                value = 1000
             elif "🌟" in name:
-                value = 50
+                value = 10000
             elif "💫" in name:
-                value = 100
+                continue
             else:
                 value = 20
             self.shibes[name] = value
@@ -54,11 +54,11 @@ class ShopPlug(Plugin):
     @ensure_index
     def sell_shibe(self, event, user, shibe, shibe_index: int):
         if "⭐" in shibe[0]:
-            user.bepis += 20
+            user.bepis += 1000
         elif "🌟" in shibe[0]:
-            user.bepis += 40
+            user.bepis += 10000
         elif "💫" in shibe[0]:
-            user.bepis += 80
+            user.bepis += 1000000
         else:
             user.bepis += 10
         event.msg.reply("Thanks for the {0}, you now have {1} bepis".format(shibe[0], user.bepis))
