@@ -93,7 +93,16 @@ class StaticDataPlug(Plugin):
     def show_blank(self, event):
         with open("imgs/....png", "rb") as file:
             event.msg.reply(attachments=[("blank.png", file)])
- 
+    @Plugin.command("art")
+    def show_art(self, event):
+       arr = ["https://images-ext-2.discordapp.net/external/BWAt51T36jmadtIkDN8j_nAYaUstFOCF_H7bYR5x4fk/https/cdn.discordapp.com/attachments/457661952626524180/491437011861897246/dog_in_spacepng.png?width=400&height=286",
+              "https://media.discordapp.net/attachments/463838865917083649/496051397234524190/space_bepis_by_marmar_3-dcbgjf0.png?width=400&height=300",
+              "https://media.discordapp.net/attachments/463838865917083649/496051350250192905/fetched_by_marmar_3-dcfintl.png?width=356&height=300"]
+       event.msg.reply(choice(arr))
+    @Plugin.command("proof")
+    def show_proof(self,event):
+       event.msg.reply("https://images-ext-1.discordapp.net/external/_57a8B12Eh3f4-7SLbsWEQ_c8hoVWm9pS431FUZtMX8/https/cdn.discordapp.com/attachments/457661952626524180/467784856466882580/proof.png?width=356&height=300")
+
     @Plugin.command("shibe", "[user:str]")
     def random_shibe(self, event, user:str=None):
         if user_dict.get(user) != None :
