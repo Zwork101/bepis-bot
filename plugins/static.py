@@ -10,7 +10,7 @@ import requests
 user_dict = {"para": "https://cdn.discordapp.com/avatars/163657657935200256/b4cca845ea334b4c3b4d40e5bbeafb66.png?size=128",
             "invert": "https://cdn.discordapp.com/avatars/251395704591876096/e9720034c9e3e5ec74cfe56f5cb19f9a.png?size=128",
             "programmer": "https://cdn.discordapp.com/avatars/473977899599396865/2945a2129a43915b6821d9c83549e51d.png?size=128",
-            "shannon": "https://media.discordapp.net/attachments/447172845357891596/496048322801434626/Shannon_Shibe.png?width=398&height=301,
+            "shannon": "https://media.discordapp.net/attachments/447172845357891596/496048322801434626/Shannon_Shibe.png?width=398&height=301",
             "toxic": "https://media.discordapp.net/attachments/447172845357891596/496048443119370250/Bootiful_Estonian_Sing_Shibe.png?width=327&height=301",
             "shoe":"https://media.discordapp.net/attachments/447172845357891596/496048538602569730/aFineShibe.png?width=359&height=301",
             "jack":"https://media.discordapp.net/attachments/447172845357891596/496048768580321294/Jack_Shibe.png?width=400&height=294"}
