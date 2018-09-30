@@ -88,9 +88,9 @@ class StaticDataPlug(Plugin):
         with open("imgs/....png", "rb") as file:
             event.msg.reply(attachments=[("blank.png", file)])
  
-    @Plugin.command("shibe","[user:str]")
-    def random_shibe(self,event,user:str=None):
-        if(user_dict.get(user) != None):
+    @Plugin.command("shibe", "[user:str]")
+    def random_shibe(self, event, user:str=None):
+        if user_dict.get(user) != None :
             event.msg.reply(user_dict.get(user))
             return
         shibe = choice(self.shibes)
