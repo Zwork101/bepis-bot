@@ -7,7 +7,7 @@ from utils.deco import admin_only
 
 from disco.bot import Plugin
 import requests
-
+user_dict = {"para": "https://cdn.discordapp.com/avatars/163657657935200256/b4cca845ea334b4c3b4d40e5bbeafb66.png?size=128"}
 
 class StaticDataPlug(Plugin):
 
@@ -88,8 +88,11 @@ class StaticDataPlug(Plugin):
         with open("imgs/....png", "rb") as file:
             event.msg.reply(attachments=[("blank.png", file)])
 
-    @Plugin.command("shibe")
-    def random_shibe(self, event):
+    @Plugin.command("shibe","[user:str]")
+    def random_shibe(self, user: str=None,event):
+        if(user != None and user_dict.get(user) != None):
+            event.msg.reply(user_dict.get(user)
+            
         shibe = choice(self.shibes)
         if shibe[0] == "LINK":
             event.msg.reply(shibe[1])
