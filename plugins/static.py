@@ -87,9 +87,7 @@ class StaticDataPlug(Plugin):
     def show_blank(self, event):
         with open("imgs/....png", "rb") as file:
             event.msg.reply(attachments=[("blank.png", file)])
-    @Plugin.command("hi")
-    def hi(self,event):
-        event.msg.reply("hi")
+ 
     @Plugin.command("shibe","[user:str]")
     def random_shibe(self,event,user:str=None):
         if(user != None and user_dict.get(user) != None):
@@ -107,7 +105,6 @@ class StaticDataPlug(Plugin):
     @Plugin.command("source")
     def show_github(self, event):
         event.msg.reply("Read it like the bible: https://github.com/Zwork101/bepis-bot")
-
     @Plugin.command("reload shrine")
     @admin_only
     def reload_shrine(self, event):
