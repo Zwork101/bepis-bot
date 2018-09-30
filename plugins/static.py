@@ -7,7 +7,13 @@ from utils.deco import admin_only
 
 from disco.bot import Plugin
 import requests
-
+user_dict = {"para": "https://cdn.discordapp.com/avatars/163657657935200256/b4cca845ea334b4c3b4d40e5bbeafb66.png?size=128",
+            "invert": "https://cdn.discordapp.com/avatars/251395704591876096/e9720034c9e3e5ec74cfe56f5cb19f9a.png?size=128",
+            "programmer": "https://cdn.discordapp.com/avatars/473977899599396865/2945a2129a43915b6821d9c83549e51d.png?size=128",
+            "shannon": "https://media.discordapp.net/attachments/447172845357891596/496048322801434626/Shannon_Shibe.png?width=398&height=301,
+            "toxic": "https://media.discordapp.net/attachments/447172845357891596/496048443119370250/Bootiful_Estonian_Sing_Shibe.png?width=327&height=301",
+            "shoe":"https://media.discordapp.net/attachments/447172845357891596/496048538602569730/aFineShibe.png?width=359&height=301",
+            "jack":"https://media.discordapp.net/attachments/447172845357891596/496048768580321294/Jack_Shibe.png?width=400&height=294"}
 
 class StaticDataPlug(Plugin):
 
@@ -87,9 +93,12 @@ class StaticDataPlug(Plugin):
     def show_blank(self, event):
         with open("imgs/....png", "rb") as file:
             event.msg.reply(attachments=[("blank.png", file)])
-
-    @Plugin.command("shibe")
-    def random_shibe(self, event):
+ 
+    @Plugin.command("shibe", "[user:str]")
+    def random_shibe(self, event, user:str=None):
+        if user_dict.get(user) != None :
+            event.msg.reply(user_dict.get(user))
+            return
         shibe = choice(self.shibes)
         if shibe[0] == "LINK":
             event.msg.reply(shibe[1])
@@ -102,7 +111,6 @@ class StaticDataPlug(Plugin):
     @Plugin.command("source")
     def show_github(self, event):
         event.msg.reply("Read it like the bible: https://github.com/Zwork101/bepis-bot")
-
     @Plugin.command("reload shrine")
     @admin_only
     def reload_shrine(self, event):
