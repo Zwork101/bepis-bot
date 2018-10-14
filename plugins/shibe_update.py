@@ -86,19 +86,6 @@ class ShibeUpdatePlug(Plugin):
             event.msg.reply(embed=embed)
             self.logger.info("User {0} is counting his shibe".format(user.user_id))
 
-    @Plugin.command("show", "<shibe_index:int>")
-    @ensure_profile
-    @ensure_index
-    def show_shibe(self, event, user, shibe, shibe_index: int):
-        for name, url in self.shibes.items():
-            if name == shibe[0]:
-                break
-        resp = requests.get(url)
-        file = BytesIO(resp.content)
-        file.seek(0)
-        event.msg.reply("Here's your **{0}**".format(shibe[0]), attachments=[(shibe[0] + ".png", file)])
-        self.logger.info("User {0} is bragging about his {1}".format(user.user_id, shibe[0]))
-
     @Plugin.command("trade", "<other_user:str> <shibe_index:int>")
     @ensure_profile
     @ensure_index

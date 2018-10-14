@@ -3,7 +3,7 @@ from random import randint
 
 from utils.common import SHIBE_CHANNEL
 from utils.db import Database
-from utils.deco import ensure_profile, ensure_other, ensure_index
+from utils.deco import ensure_profile, ensure_other, ensure_index, admin_only
 
 from disco.bot import Plugin
 from disco.types.message import MessageEmbed
@@ -122,3 +122,24 @@ class ShopPlug(Plugin):
         else:
             user.bepis -= amount
             event.msg.reply("Oh no, you lost... You now have {0} bepis".format(user.bepis))
+
+    @Plugin.command("reload shop")
+    @admin_only
+    def reload_shop(self, event):
+        client = event.guilds[0].client
+        shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
+        for msg in shibe_channel.messages:
+            split_msg = msg.content.split(' ')
+            _, name = split_msg[0], ' '.join(split_msg[1:])
+            if "⭐" in name:
+                value = 1000
+            elif "🌟" in name:
+                value = 10000
+            elif "💫" in name:
+                continue
+            else:
+                value = 20
+            self.shibes[name] = value
+        self.shibes = sorted(self.shibes.items(), key=lambda x: x[1])
+        self.shibes.reverse()
+        self.logger.info("Finished loading {0} shibes".format(len(self.shibes)))

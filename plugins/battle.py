@@ -2,7 +2,7 @@ from logging import getLogger
 from io import BytesIO
 import random
 
-from utils.common import SHIBE_CHANNEL, BATTLE_MSGS, COMMAND_OUTLAWS, REDIRECT_CHANNEL
+from utils.common import SHIBE_CHANNEL, BATTLE_MSGS, COMMAND_OUTLAWS, REDIRECT_CHANNEL, UNCATCHABLE_CHANNEL
 from utils.db import Database
 from utils.deco import ensure_profile, ensure_other, ensure_index, limit_channel
 
@@ -24,11 +24,12 @@ class BattlePlug(Plugin):
     @Plugin.listen("Ready")
     def on_ready(self, event):
         client = event.guilds[0].client
-        shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
-        for msg in shibe_channel.messages:
-            split_msg = msg.content.split(' ')
-            url, name = split_msg[0], ' '.join(split_msg[1:])
-            self.shibes[name] = url
+        for channel_id in (SHIBE_CHANNEL, UNCATCHABLE_CHANNEL):
+            shibe_channel = client.api.channels_get(channel_id)
+            for msg in shibe_channel.messages:
+                split_msg = msg.content.split(' ')
+                url, name = split_msg[0], ' '.join(split_msg[1:])
+                self.shibes[name] = url
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes.keys())))
 
     @Plugin.command("battle", "<other_user:str> <shibe_index:int>")
