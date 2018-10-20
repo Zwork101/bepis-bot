@@ -1,10 +1,34 @@
+from asyncio import Task
 from datetime import datetime, timedelta
 from logging import getLogger
 from hashlib import md5
 from os import environ
 from uuid import uuid4
+from threading import Thread
+from queue import Queue
 
 from pymongo import mongo_client
+
+
+class EventHandler(Thread):
+
+    def __init__(self):
+        self.q = Queue()
+        super().__init__()
+        self.start()
+
+    def do(self, command, *args, **kwargs):
+        cb = Queue()
+        self.q.put((cb, command, args, kwargs))
+        return cb.get()
+
+    def run(self):
+        while True:
+            cb, cmd, args, kwargs = self.q.get()
+            cb.put(cmd(*args, **kwargs))
+
+
+handler = EventHandler()
 
 
 class BepisUser:
@@ -18,7 +42,7 @@ class BepisUser:
         self._last_daily = contents['last_daily']
 
         if "powerups" not in contents:
-            self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": []}})
+            handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"powerups": []}})
             self.powerups = []
         else:
             self.powerups = contents['powerups']
@@ -29,7 +53,7 @@ class BepisUser:
 
     @bepis.setter
     def bepis(self, value):
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"bepis": value}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"bepis": value}})
         self._bepis = value
         self.logger.debug("Updated bepis to: " + str(value))
 
@@ -39,7 +63,7 @@ class BepisUser:
 
     @last_daily.setter
     def last_daily(self, value):
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"last_daily": value}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"last_daily": value}})
         self._last_daily = value
         self.logger.debug("Updated last_daily to now")
 
@@ -51,7 +75,7 @@ class BepisUser:
                 break
         else:
             self.shibes.append((shibe_name, (1 if amount is None else amount)))
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
         self.logger.debug("Added shibe: " + shibe_name)
 
     def remove_shibe(self, shibe_index: int):
@@ -61,13 +85,13 @@ class BepisUser:
             self.shibes.pop(shibe_index)
         else:
             self.shibes[shibe_index] = (shibe[0], new_count)
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"shibes": self.shibes}})
         self.logger.debug("Removed shibe: " + shibe[0])
 
     def add_powerup(self, *data):
         powerups = self.powerups.copy()
         powerups.append(data)
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": powerups}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"powerups": powerups}})
         self.logger.debug("Added powerup: " + powerups[0])
 
     def remove_powerup(self, name: str):
@@ -75,17 +99,18 @@ class BepisUser:
             if powerup[0] == name and powerup[1] is not None:
                 break
         self.powerups.remove(powerup)
-        self.master.update_one({"user_id": self.user_id}, {"$set": {"powerups": powerup}})
+        handler.do(self.master.update_one, {"user_id": self.user_id}, {"$set": {"powerups": powerup}})
         self.logger.debug("Removed powerup: " + powerup[0])
 
 
-class Database:
+class Database(EventHandler):
 
     def __init__(self, name: str):
         self.logger = getLogger(name + "-database")
         self.client = mongo_client.MongoClient(environ["MONGO_URI"])
         self.profiles = self.client['bepis_bot']['profiles']
         self.profiles.create_index("user_id", unique=True)
+        super().__init__()
 
     def create_user(self, user):
         payload = {
@@ -95,28 +120,29 @@ class Database:
             "last_daily": datetime.now() - timedelta(days=1),
             "invite_url": None
         }
-        self.profiles.insert_one(payload)
+        handler.do(self.profiles.insert_one, payload)
         self.logger.debug("Created User: " + str(user.id))
         return BepisUser(self.logger.name, self.profiles, payload)
 
     def find_user(self, user_id: int):
-        prof = self.profiles.find_one({"user_id": user_id})
+        prof = handler.do(self.profiles.find_one, {"user_id": user_id})
         if prof:
             self.logger.debug("Found user: " + str(user_id))
             return BepisUser(self.logger.name, self.profiles, prof)
         self.logger.debug("Could not find user: " + str(user_id))
 
 
-class InviteDatabase:
+class InviteDatabase(EventHandler):
 
     def __init__(self):
         self.logger = getLogger("InviteDatabase")
         self.client = mongo_client.MongoClient(environ["MONGO_URI"])
         self.invites = self.client['bepis_bot']['invites']
         self.profiles = self.client['bepis_bot']['profiles']
+        super().__init__()
 
     def already_joined(self, member):
-        user = self.profiles.find_one({"user_id": member.user.id})
+        user = handler.do(self.profiles.find_one, {"user_id": member.user.id})
         if user is None:
             self.logger.debug("Checking join on {0} (hasn't joined)".format(member.user.id))
             return False
@@ -125,7 +151,7 @@ class InviteDatabase:
             return True
 
     def register_invite(self, invite_code: str, user_id: int):
-        self.invites.insert_one({
+        handler.do(self.invites.insert_one, {
             "invite_code": invite_code,
             "user_id": user_id
         })
@@ -133,26 +159,26 @@ class InviteDatabase:
 
     def __iter__(self):
         for invite in self.invites.find({}):
-            print(invite)
             yield invite
 
     def remove_invite(self, invite_code: str):
-        self.invites.delete_one({"invite_code": invite_code})
+        handler.do(self.invites.delete_one, {"invite_code": invite_code})
         self.logger.debug("Removed invite: {0}".format(invite_code))
 
 
-class CodeDatabase:
+class CodeDatabase(EventHandler):
 
     def __init__(self):
         self.logger = getLogger("CodeDatabase")
         self.client = mongo_client.MongoClient(environ["MONGO_URI"])
         self.codes = self.client['bepis_bot']['codes']
         self.codes.create_index("hash", unique=True)
+        super().__init__()
 
     def create_code(self, value: str):
         code = str(uuid4()).upper()
         hashed = md5(code.encode()).hexdigest()
-        self.codes.insert_one({"hash": hashed,
+        handler.do(self.codes.insert_one, {"hash": hashed,
                                "value": value})
         return code
 

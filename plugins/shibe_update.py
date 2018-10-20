@@ -91,6 +91,8 @@ class ShibeUpdatePlug(Plugin):
     @ensure_index
     @ensure_other
     def trade_shibe(self, event, user, shibe, other_user, shibe_index: int):
+        if other_user.user.id == user.user_id:
+            return event.msg.reply("You can't trade with yourself, that's silly. Don't do silly things.")
         other_profile = self.db.find_user(other_user.user.id)
         other_profile.add_shibe(shibe[0])
         user.remove_shibe(shibe_index - 1)
