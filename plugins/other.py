@@ -34,6 +34,7 @@ class ExtraPlug(Plugin):
 **buy *shibe*** <ID> | Buy a shibe from our shop. It's worth every bepis.
 **donate** <@> <#> | Feeling charitable? Donate bepis to someone else.
 **flip** <#> | Flip a coin. You win, double your bet. Lose, lose your bet.
+**ticket** <#> | Buy a certain amount of tickets, the more the merrier. 
 
 ***Fun Commands***
 *The following commands don't take any arguments, and show images / videos.*

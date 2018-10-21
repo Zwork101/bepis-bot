@@ -1,4 +1,3 @@
-from asyncio import Task
 from datetime import datetime, timedelta
 from logging import getLogger
 from hashlib import md5
@@ -196,7 +195,7 @@ class LotteryDatabase:
         self.client = mongo_client.MongoClient(environ["MONGO_URI"])
         self.lottery = self.client['bepis_bot']['lottery']
 
-    def start_lottery(self, value, length=(5 * 60), price=10):
+    def start_lottery(self, value, length=(12 * 60 * 60), price=10):
         handler.do(self.lottery.delete_many, {})
         handler.do(self.lottery.insert_one, {
             "type": "LOTTERY",
