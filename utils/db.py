@@ -166,14 +166,13 @@ class InviteDatabase(EventHandler):
         self.logger.debug("Removed invite: {0}".format(invite_code))
 
 
-class CodeDatabase(EventHandler):
+class CodeDatabase:
 
     def __init__(self):
         self.logger = getLogger("CodeDatabase")
         self.client = mongo_client.MongoClient(environ["MONGO_URI"])
         self.codes = self.client['bepis_bot']['codes']
         self.codes.create_index("hash", unique=True)
-        super().__init__()
 
     def create_code(self, value: str):
         code = str(uuid4()).upper()
@@ -188,3 +187,40 @@ class CodeDatabase(EventHandler):
         if result:
             self.codes.delete_one({"hash": hashed})
             return result['value']
+
+
+class LotteryDatabase:
+
+    def __init__(self):
+        self.logger = getLogger("LotteryDatabase")
+        self.client = mongo_client.MongoClient(environ["MONGO_URI"])
+        self.lottery = self.client['bepis_bot']['lottery']
+
+    def start_lottery(self, value, length=(5 * 60), price=10):
+        handler.do(self.lottery.delete_many, {})
+        handler.do(self.lottery.insert_one, {
+            "type": "LOTTERY",
+            "start_time": datetime.now(),
+            "length": length,
+            "price": price,
+            "value": value
+        })
+
+    def add_tickets(self, id: str, amount: int):
+        current_amount = handler.do(self.lottery.find_one, {"user_id": id})
+        if current_amount:
+            total = current_amount["amount"] + amount
+            handler.do(self.lottery.update_one, {"user_id": id}, {"$set": {"amount": total}})
+        else:
+            handler.do(self.lottery.insert_one, {
+                "type": "USER",
+                "user_id": id,
+                "amount": amount
+            })
+
+    def get_event(self):
+        return handler.do(self.lottery.find_one, {"type": "LOTTERY"})
+
+    def get_users(self):
+        return handler.do(self.lottery.find, {"type": "USER"})
+

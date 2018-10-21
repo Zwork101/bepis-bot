@@ -1,22 +1,54 @@
+from datetime import datetime, timedelta
 from logging import getLogger
-from random import randint
+from random import randint, choice
 
-from utils.common import SHIBE_CHANNEL
-from utils.db import Database
+from utils.common import SHIBE_CHANNEL, LOTTERY_CHANNEL, LOTTERY_ROLE, SHIBE_GUILD
+from utils.db import Database, LotteryDatabase
 from utils.deco import ensure_profile, ensure_other, ensure_index, admin_only
 
 from disco.bot import Plugin
 from disco.types.message import MessageEmbed
+import gevent
 
 
 class ShopPlug(Plugin):
 
     def load(self, config):
         self.db = Database("ShopPlug")
+        self.lottery = LotteryDatabase()
         self.logger = getLogger("ShopPlug")
         self.shibes = {}
         super().load(config)
+
         self.logger.info("Finished loading ShopPlug")
+
+    def start_lottery(self, client, delay=0):
+        gevent.sleep(delay)
+        tickets = []
+        users = self.lottery.get_users()
+        current_lottery = self.lottery.get_event()
+        if current_lottery:
+            for user in users:
+                for _ in range(user['amount']):
+                    tickets.append(user["user_id"])
+            if not tickets:
+                client.api.channels_messages_create(LOTTERY_CHANNEL, "No one bought tickets, so we have no winners.")
+            winner = choice(tickets)
+            client.api.channels_messages_create(LOTTERY_CHANNEL, "<@&{2}> And the winner is... <@{0}>! Contrats, {1} "
+                                                                 "bepis has been added to your account."
+                                                .format(winner, current_lottery["value"], LOTTERY_ROLE))
+            guild = client.api.guilds_get(SHIBE_GUILD)
+            for member in guild.members:
+                if LOTTERY_ROLE in member.roles:
+                    member.remove_role(LOTTERY_ROLE)
+
+        next_value = randint(100, 200)
+        self.lottery.start_lottery(next_value)
+        new_lottery = self.lottery.get_event()
+        client.api.channels_messages_create(LOTTERY_CHANNEL, "A new lottery has started! Buy tickets with !ticket to "
+                                                             "win the ***{0}*** bepis prize! Ends in 12 hours."
+                                            .format(new_lottery['value']))
+        gevent.spawn_later(new_lottery['length'], self.start_lottery, client)
 
     @Plugin.listen("Ready")
     def on_ready(self, event):
@@ -37,6 +69,17 @@ class ShopPlug(Plugin):
         self.shibes = sorted(self.shibes.items(), key=lambda x: x[1])
         self.shibes.reverse()
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes)))
+
+        current_lottery = self.lottery.get_event()
+        if current_lottery:
+            delay = datetime.now() - timedelta(seconds=current_lottery['length'])
+            if delay >= current_lottery['start_time']:
+                self.start_lottery(client)
+            else:
+                wait = current_lottery - delay
+                self.start_lottery(client, wait.seconds)
+        else:
+            self.start_lottery(client)
 
     @Plugin.command("bepis", "[other_user:str]")
     @ensure_profile
@@ -122,6 +165,19 @@ class ShopPlug(Plugin):
         else:
             user.bepis -= amount
             event.msg.reply("Oh no, you lost... You now have {0} bepis".format(user.bepis))
+
+    @Plugin.command("ticket", "<amount:int>")
+    @ensure_profile
+    def buy_tickets(self, event, user, amount: int):
+        current_lottery = self.lottery.get_event()
+        if user.bepis < (amount * current_lottery["price"]):
+            return event.msg.reply("Sorry, but you don't have enough bepis for that.")
+        self.lottery.add_tickets(user.user_id, amount)
+        member = event.msg.guild.get_member(user.user_id)
+        if LOTTERY_ROLE not in member.roles:
+            member.add_role(LOTTERY_ROLE)
+        user.bepis -= (amount * current_lottery['price'])
+        event.msg.reply("Alright! Added {0} more tickets into your account.".format(amount))
 
     @Plugin.command("reload shop")
     @admin_only
