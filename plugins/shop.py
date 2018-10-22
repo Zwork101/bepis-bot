@@ -37,6 +37,8 @@ class ShopPlug(Plugin):
             client.api.channels_messages_create(LOTTERY_CHANNEL, "<@&{2}> And the winner is... <@{0}>! Contrats, {1} "
                                                                  "bepis has been added to your account."
                                                 .format(winner, current_lottery["value"], LOTTERY_ROLE))
+            bepis_user = self.db.find_user(winner)
+            bepis_user.bepis += current_lottery["value"]
             guild = client.api.guilds_get(SHIBE_GUILD)
             for member in guild.members:
                 if LOTTERY_ROLE in member.roles:
