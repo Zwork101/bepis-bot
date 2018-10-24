@@ -148,6 +148,8 @@ class ShopPlug(Plugin):
             return event.msg.reply("You don't have enough bepis to donate that amount")
         elif amount < 1:
             return event.msg.reply("You can't just *give* them no money!")
+        elif user.user_id == other_user.user.id:
+            return event.msg.reply("No.")
         db_user = self.db.find_user(other_user.user.id)
         user.bepis -= amount
         db_user.bepis += amount
