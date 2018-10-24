@@ -174,6 +174,8 @@ class ShopPlug(Plugin):
         current_lottery = self.lottery.get_event()
         if user.bepis < (amount * current_lottery["price"]):
             return event.msg.reply("Sorry, but you don't have enough bepis for that.")
+        elif amount <= 0:
+            return event.msg.reply("Why are you doing that, that's stupid. Don't be stupid.")
         self.lottery.add_tickets(user.user_id, amount)
         member = event.msg.guild.get_member(user.user_id)
         if LOTTERY_ROLE not in member.roles:
