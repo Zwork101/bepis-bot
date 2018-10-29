@@ -18,7 +18,7 @@ class ExtraPlug(Plugin):
     def help(self, event):
         embed = MessageEmbed()
         embed.title = "Bepis Boi's commands"
-        embed.description = """Here are my commands:
+        embed.description = """Here are my commands:\n
 ***Shibe Commands***
 **catch** | Find a random shibe, and add it to your inventory.
 **inv** [#] | Look at your collection of shibes, always stored in stacks.
@@ -34,8 +34,16 @@ class ExtraPlug(Plugin):
 **buy *shibe*** <ID> | Buy a shibe from our shop. It's worth every bepis.
 **donate** <@> <#> | Feeling charitable? Donate bepis to someone else.
 **flip** <#> | Flip a coin. You win, double your bet. Lose, lose your bet.
-**ticket** <#> | Buy a certain amount of tickets, the more the merrier. 
+**ticket** <#> | Buy a certain amount of tickets, the more the merrier."""
+        embed.set_footer(text="<>: required, []: optional, @: mention, "
+                              "#: number, ID: shop ID / inventory ID, ABC: text")
+        embed.color = 0x000080
+        event.msg.reply(embed=embed)
 
+        embed = MessageEmbed()
+        embed.title = "Bepis Boi's commands"
+
+        embed.description = """Here are my commands:\n
 ***Fun Commands***
 *The following commands don't take any arguments, and show images / videos.*
 **disrespect, tarnation, anthem, drincc, pat, politics, soviet, stop,

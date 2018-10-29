@@ -77,7 +77,7 @@ class AdminPlug(Plugin):
     def eval_code(self, event, user, code: str):
         if event.msg.author.id == BOT_OWNER:
             try:
-                client = event.guilds[0].client
+                client = event.command.plugin.client
                 returns = str(eval(code, {"event": event, "self": self, "user": user, 'client': client}))
                 if len(returns) > 1994:
                     while len(returns) > 1994:
@@ -95,7 +95,7 @@ class AdminPlug(Plugin):
 
     @Plugin.command("reload admin")
     def reload_admin(self, event):
-        client = event.guilds[0].client
+        client = event.command.plugin.client
         for channel_id in (SHIBE_CHANNEL, UNCATCHABLE_CHANNEL):
             shibe_channel = client.api.channels_get(channel_id)
             for msg in shibe_channel.messages:
@@ -103,6 +103,7 @@ class AdminPlug(Plugin):
                 url, name = split_msg[0], ' '.join(split_msg[1:])
                 self.shibes[name] = url
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes.keys())))
+        event.msg.reply("Finished reloading shibes. {0} shibes in total.".format(len(self.shibes.keys())))
 
     # I'm sure you're probobly wondering
     # why the show command is in the admin plugin

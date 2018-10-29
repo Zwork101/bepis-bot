@@ -40,7 +40,7 @@ class ShopPlug(Plugin):
             bepis_user = self.db.find_user(winner)
             bepis_user.bepis += current_lottery["value"]
             guild = client.api.guilds_get(SHIBE_GUILD)
-            for member in guild.members:
+            for member in guild.members.values():
                 if LOTTERY_ROLE in member.roles:
                     member.remove_role(LOTTERY_ROLE)
 
@@ -78,7 +78,7 @@ class ShopPlug(Plugin):
             if delay >= current_lottery['start_time']:
                 self.start_lottery(client)
             else:
-                wait = current_lottery - delay
+                wait = current_lottery['start_time'] - delay
                 self.start_lottery(client, wait.seconds)
         else:
             self.start_lottery(client)
@@ -205,3 +205,4 @@ class ShopPlug(Plugin):
         self.shibes = sorted(self.shibes.items(), key=lambda x: x[1])
         self.shibes.reverse()
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes)))
+        event.msg.reply("Finished reloading shibes. {0} catchable shibes.".format(len(self.shibes.keys())))
