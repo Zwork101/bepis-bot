@@ -1,6 +1,7 @@
 from logging import getLogger
 from io import BytesIO
 from traceback import format_exception_only
+from datetime import datetime
 
 from disco.bot import Plugin
 import requests
@@ -126,3 +127,8 @@ class AdminPlug(Plugin):
         file.seek(0)
         event.msg.reply("Here's your **{0}**".format(shibe[0]), attachments=[(shibe[0] + ".png", file)])
         self.logger.info("User {0} is bragging about his {1}".format(user.user_id, shibe[0]))
+
+    @Plugin.listen("GuildMemberAdd")
+    def on_join(self, member):
+        if (datetime.now() - datetime.utcfromtimestamp(((int(member.user.id) >> 22) + 1420070400000) / 1000)).days < 2:
+            member.ban()
