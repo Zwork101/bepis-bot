@@ -56,6 +56,7 @@ class ShopPlug(Plugin):
     def on_ready(self, event):
         client = event.guilds[0].client
         shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
+        self.shibes = {}
         for msg in shibe_channel.messages:
             split_msg = msg.content.split(' ')
             _, name = split_msg[0], ' '.join(split_msg[1:])
@@ -190,6 +191,7 @@ class ShopPlug(Plugin):
     def reload_shop(self, event):
         client = event.msg.client
         shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
+        self.shibes = {}
         for msg in shibe_channel.messages:
             split_msg = msg.content.split(' ')
             _, name = split_msg[0], ' '.join(split_msg[1:])
