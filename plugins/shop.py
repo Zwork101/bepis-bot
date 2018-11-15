@@ -188,7 +188,7 @@ class ShopPlug(Plugin):
     @Plugin.command("reload shop")
     @admin_only
     def reload_shop(self, event):
-        client = event.guilds[0].client
+        client = event.msg.client
         shibe_channel = client.api.channels_get(SHIBE_CHANNEL)
         for msg in shibe_channel.messages:
             split_msg = msg.content.split(' ')
