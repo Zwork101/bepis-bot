@@ -207,4 +207,4 @@ class ShopPlug(Plugin):
         self.shibes = sorted(self.shibes.items(), key=lambda x: x[1])
         self.shibes.reverse()
         self.logger.info("Finished loading {0} shibes".format(len(self.shibes)))
-        event.msg.reply("Finished reloading shibes. {0} catchable shibes.".format(len(self.shibes.keys())))
+        event.msg.reply("Finished reloading shibes. {0} catchable shibes.".format(len(self.shibes)))
